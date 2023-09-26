@@ -392,7 +392,7 @@ code:
         Ok(instrs)
     }
     fn words(&mut self, words: Vec<Sp<Word>>, call: bool) -> UiuaResult {
-        for word in words.into_iter().rev() {
+        for word in words {
             self.word(word, call)?;
         }
         Ok(())
@@ -535,7 +535,7 @@ code:
                 if inner.iter().all(|instr| matches!(instr, Instr::Push(_))) {
                     // Inline constant arrays
                     instrs.pop();
-                    let values = inner.into_iter().rev().map(|instr| match instr {
+                    let values = inner.into_iter().map(|instr| match instr {
                         Instr::Push(v) => *v,
                         _ => unreachable!(),
                     });
@@ -558,14 +558,14 @@ code:
                 }
                 self.push_instr(Instr::BeginArray);
                 let mut inner = Vec::new();
-                for lines in arr.lines.into_iter().rev() {
+                for lines in arr.lines {
                     inner.extend(self.compile_words(lines, true)?);
                 }
                 let span = self.add_span(word.span.clone());
                 let instrs = self.new_functions.last_mut().unwrap();
                 if call && inner.iter().all(|instr| matches!(instr, Instr::Push(_))) {
                     instrs.pop();
-                    let values = inner.into_iter().rev().map(|instr| match instr {
+                    let values = inner.into_iter().map(|instr| match instr {
                         Instr::Push(v) => *v,
                         _ => unreachable!(),
                     });
@@ -760,7 +760,7 @@ code:
                 &Instr::EndArray { span, constant } => (|| {
                     let start = self.scope.array.pop().unwrap();
                     self.push_span(span, None);
-                    let values = self.stack.drain(start..).rev();
+                    let values = self.stack.drain(start..);
                     let values: Vec<Value> = if constant {
                         values
                             .map(Function::constant)
